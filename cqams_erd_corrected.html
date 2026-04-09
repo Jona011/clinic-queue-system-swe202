@@ -1,0 +1,139 @@
+
+<div id="erd"></div>
+<style>
+#erd svg { width:100%; height:auto; }
+</style>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '12px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    primaryColor: dark ? '#2a2a28' : '#f1efe8',
+    primaryBorderColor: dark ? '#5f5e5a' : '#b4b2a9',
+    primaryTextColor: dark ? '#c2c0b6' : '#3d3d3a',
+    attributeBackgroundColorEven: dark ? '#262624' : '#ffffff',
+    attributeBackgroundColorOdd: dark ? '#2f2f2d' : '#f7f6f2',
+  },
+  er: { diagramPadding: 24, layoutDirection: 'TB', minEntityWidth: 100, minEntityHeight: 75, entityPadding: 15, useMaxWidth: true }
+});
+const diagram = `erDiagram
+  USER {
+    int userId PK
+    string email
+    string passwordHash
+    string firstName
+    string lastName
+    string role
+    string languagePreference
+    bool isActive
+    datetime createdAt
+    datetime lastLogin
+  }
+  PATIENT {
+    int patientId PK
+    int userId FK
+    date dateOfBirth
+    string phone
+    string address
+    string insuranceNumber
+  }
+  DOCTOR {
+    int doctorId PK
+    int userId FK
+    string specialization
+    string licenseNumber
+    string assignedRoom
+    int departmentId FK
+  }
+  APPOINTMENT {
+    int appointmentId PK
+    int patientId FK
+    int doctorId FK
+    datetime scheduledTime
+    string status
+    string type
+    string notes
+    datetime createdAt
+  }
+  QUEUE_TICKET {
+    int ticketId PK
+    int patientId FK
+    int doctorId FK
+    string ticketNumber
+    string priority
+    string status
+    datetime issuedAt
+    datetime calledAt
+  }
+  MEDICAL_RECORD {
+    int recordId PK
+    int appointmentId FK
+    int patientId FK
+    int doctorId FK
+    string diagnosis
+    text clinicalNotes
+    datetime createdAt
+    datetime updatedAt
+  }
+  PRESCRIPTION {
+    int prescriptionId PK
+    int recordId FK
+    int doctorId FK
+    string medication
+    string dosage
+    string instructions
+    datetime issuedAt
+  }
+  NOTIFICATION {
+    int notificationId PK
+    int userId FK
+    int appointmentId FK
+    string type
+    string message
+    bool isRead
+    datetime sentAt
+  }
+  AUDIT_LOG {
+    int logId PK
+    int userId FK
+    string action
+    string entityType
+    int entityId
+    string ipAddress
+    datetime timestamp
+  }
+  DOCTOR_AVAILABILITY {
+    int availabilityId PK
+    int doctorId FK
+    string dayOfWeek
+    time startTime
+    time endTime
+    bool isBlocked
+    string blockReason
+  }
+
+  USER ||--|| PATIENT : "extends (1:1)"
+  USER ||--|| DOCTOR : "extends (1:1)"
+  PATIENT ||--o{ APPOINTMENT : "books"
+  DOCTOR ||--o{ APPOINTMENT : "conducts"
+  APPOINTMENT ||--o| MEDICAL_RECORD : "produces"
+  MEDICAL_RECORD ||--o{ PRESCRIPTION : "generates"
+  PATIENT ||--o{ QUEUE_TICKET : "receives"
+  DOCTOR ||--o{ QUEUE_TICKET : "serves"
+  USER ||--o{ NOTIFICATION : "receives"
+  APPOINTMENT ||--o{ NOTIFICATION : "triggers"
+  USER ||--o{ AUDIT_LOG : "generates"
+  DOCTOR ||--o{ DOCTOR_AVAILABILITY : "defines"
+`;
+const { svg } = await mermaid.render('erd-svg', diagram);
+document.getElementById('erd').innerHTML = svg;
+</script>

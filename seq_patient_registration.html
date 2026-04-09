@@ -1,0 +1,42 @@
+
+<div id="sd1"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({ startOnLoad:false, theme:'base', fontFamily:'"Anthropic Sans", sans-serif',
+  themeVariables:{ darkMode:dark, fontSize:'12px', fontFamily:'"Anthropic Sans", sans-serif',
+    lineColor: dark?'#9c9a92':'#73726c', textColor:dark?'#c2c0b6':'#3d3d3a',
+    primaryColor:dark?'#2a2a28':'#f1efe8', primaryBorderColor:dark?'#5f5e5a':'#b4b2a9',
+    primaryTextColor:dark?'#c2c0b6':'#3d3d3a', activationBkgColor:dark?'#3c3489':'#EEEDFE',
+    activationBorderColor:dark?'#7F77DD':'#534AB7', noteBkgColor:dark?'#2a2a28':'#faeeda',
+    noteBorderColor:dark?'#5f5e5a':'#ba7517'
+  }
+});
+const d = `sequenceDiagram
+  actor P as Patient
+  participant UI as PatientPortal
+  participant UC as User<<Controller>>
+  participant PatC as Patient<<Controller>>
+  participant DB as Database
+  participant N as Notification<<Service>>
+
+  P->>UI: Open registration form
+  UI->>UC: submitRegistration(email, password, details)
+  UC->>DB: checkEmailUnique(email)
+  DB-->>UC: unique = true
+  UC->>UC: hashPassword(password)
+  UC->>DB: createUser(email, hash, role=patient)
+  DB-->>UC: userId
+  UC->>PatC: createPatientProfile(userId, dob, phone, address, insurance)
+  PatC->>DB: insertPatient(patientId, userId, ...)
+  DB-->>PatC: patientId
+  PatC-->>UC: profile created
+  UC->>N: sendWelcomeNotification(userId)
+  N-->>P: Welcome email sent
+  UC-->>UI: registration success
+  UI-->>P: Redirect to dashboard
+`;
+const { svg } = await mermaid.render('sd1-svg', d);
+document.getElementById('sd1').innerHTML = svg;
+</script>

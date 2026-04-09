@@ -1,0 +1,192 @@
+
+<div id="cd"></div>
+<style>
+#cd svg { width: 100%; height: auto; }
+#cd svg .entityBox { rx: 8; }
+</style>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '12px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    primaryColor: dark ? '#2a2a28' : '#f1efe8',
+    primaryBorderColor: dark ? '#5f5e5a' : '#b4b2a9',
+    primaryTextColor: dark ? '#c2c0b6' : '#3d3d3a',
+    classText: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const diagram = `classDiagram
+  class User {
+    +int userId PK
+    +string email
+    +string passwordHash
+    +string firstName
+    +string lastName
+    +ENUM role
+    +string languagePreference
+    +bool isActive
+    +datetime createdAt
+    +datetime lastLogin
+    +login()
+    +logout()
+    +resetPassword()
+  }
+
+  class Patient {
+    +int patientId PK
+    +int userId FK
+    +date dateOfBirth
+    +string phone
+    +string address
+    +string insuranceNumber
+    +bookAppointment()
+    +cancelAppointment()
+    +joinQueue()
+    +viewRecords()
+  }
+
+  class Doctor {
+    +int doctorId PK
+    +int userId FK
+    +string specialization
+    +string licenseNumber
+    +string assignedRoom
+    +setAvailability()
+    +startConsultation()
+    +completeConsultation()
+    +viewQueue()
+  }
+
+  class Receptionist {
+    +int receptionistId PK
+    +int userId FK
+    +registerPatient()
+    +scheduleAppointment()
+    +manageQueue()
+    +sendNotification()
+  }
+
+  class Administrator {
+    +int adminId PK
+    +int userId FK
+    +createUser()
+    +deactivateUser()
+    +generateReport()
+    +configureSystem()
+    +reviewAuditLog()
+  }
+
+  class Appointment {
+    +int appointmentId PK
+    +int patientId FK
+    +int doctorId FK
+    +datetime scheduledTime
+    +ENUM status
+    +ENUM type
+    +string notes
+    +confirm()
+    +cancel()
+    +reschedule()
+    +complete()
+  }
+
+  class QueueTicket {
+    +int ticketId PK
+    +int patientId FK
+    +int doctorId FK
+    +string ticketNumber
+    +ENUM priority
+    +ENUM status
+    +datetime issuedAt
+    +assignPriority()
+    +advance()
+    +remove()
+  }
+
+  class MedicalRecord {
+    +int recordId PK
+    +int appointmentId FK
+    +int patientId FK
+    +int doctorId FK
+    +string diagnosis
+    +string clinicalNotes
+    +datetime createdAt
+    +create()
+    +update()
+    +view()
+  }
+
+  class Prescription {
+    +int prescriptionId PK
+    +int recordId FK
+    +int doctorId FK
+    +string medication
+    +string dosage
+    +string instructions
+    +datetime issuedAt
+    +issue()
+    +view()
+  }
+
+  class Notification {
+    +int notificationId PK
+    +int userId FK
+    +int appointmentId FK
+    +ENUM type
+    +string message
+    +bool isRead
+    +datetime sentAt
+    +send()
+    +markRead()
+  }
+
+  class AuditLog {
+    +int logId PK
+    +int userId FK
+    +string action
+    +string entityType
+    +int entityId
+    +string ipAddress
+    +datetime timestamp
+    +record()
+  }
+
+  class DoctorAvailability {
+    +int availabilityId PK
+    +int doctorId FK
+    +ENUM dayOfWeek
+    +time startTime
+    +time endTime
+    +bool isBlocked
+    +string blockReason
+    +setSlot()
+    +blockSlot()
+  }
+
+  User <|-- Patient : extends
+  User <|-- Doctor : extends
+  User <|-- Receptionist : extends
+  User <|-- Administrator : extends
+  Patient "1" --> "0..*" Appointment : books
+  Doctor "1" --> "0..*" Appointment : conducts
+  Appointment "1" --> "0..1" MedicalRecord : produces
+  MedicalRecord "1" --> "0..*" Prescription : contains
+  Patient "1" --> "0..*" QueueTicket : receives
+  Doctor "1" --> "0..*" QueueTicket : serves
+  User "1" --> "0..*" Notification : receives
+  Appointment "1" --> "0..*" Notification : triggers
+  User "1" --> "0..*" AuditLog : generates
+  Doctor "1" --> "0..*" DoctorAvailability : defines
+`;
+const { svg } = await mermaid.render('cd-svg', diagram);
+document.getElementById('cd').innerHTML = svg;
+</script>
